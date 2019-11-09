@@ -2,7 +2,7 @@ library(tidytext)
 library(tidyverse)
 library(ggplot2)
 library(ggpubr)
-setwd("C:/Users/samee/Dropbox/NYU-PhD/3. Fall 2019/Messy Data and ML")
+setwd("C:/Users/samee/Dropbox/NYU-PhD/3. Fall 2019/Messy Data and ML/Assignment 5")
 #A2
         #A2.1 Set the seed to 2048 and read in the plots and titles files with readr::read_lines(). Create a
       #plot_text tibble with three columns:
@@ -60,7 +60,7 @@ setwd("C:/Users/samee/Dropbox/NYU-PhD/3. Fall 2019/Messy Data and ML")
       interesting_words<-median_word_positions%>%arrange(median_position)%>%slice(c(1:10))
       interesting_words<-rbind(interesting_words, median_word_positions%>%arrange(median_position)%>%filter(row_number()>n()-10))
       interesting_words<-interesting_words%>%arrange(median_position)
-      write_csv(interesting_words, "Assignment 5/data/question_a2.csv")
+      write_csv(interesting_words, "hw5_chase_reza_chin/data/question_a2.csv")
       
       #A2.5
       #Use the interesting_words tibble to create one figure with two bar graph subfigures. In the first bar
@@ -80,7 +80,7 @@ setwd("C:/Users/samee/Dropbox/NYU-PhD/3. Fall 2019/Messy Data and ML")
       figure <- ggarrange(A2.5_1g, A2.5_2g,
                           ncol = 2, nrow = 1)
       
-      ggsave("Assignment 5/figures/fig_a2_5.png",figure)
+      ggsave("hw5_chase_reza_chin/figures/fig_a2_5.png",figure)
       
 #A3     
       #A3.1.
@@ -115,5 +115,22 @@ setwd("C:/Users/samee/Dropbox/NYU-PhD/3. Fall 2019/Messy Data and ML")
       A3.2<-A3.2%>%group_by(word, class)
       g3.2<-ggplot(data=A3.2, aes(x=decile, y=normalized_freq, group = word, color = class)) +geom_line()  + 
         labs(title="decile against normalized freq", x="decile", y="normalized freq")
-      ggsave("hw4_reza_chase_tello/figures/question_a3_2.png",g3.2)
+      ggsave("hw5_chase_reza_chin/figures/fig_a3.png",g3.2)
+      
+      
+#QB
+      #B1.2
+      #Starting with the plot_words tibble from Question A2.2, add a new column called sentiment, assigning
+      #to each word the corresponding sentiment value from the bing lexicon. What proportion of words have
+      #sentiment values?
+      plot_words$sentiment<-plot_words%>%inner_join(get_sentiments("bing"))
+      #B1.3. Add a decile column to plot_words, as in Question A3.1, which records the decile (an integer between
+      #1 and 10) of the plot position in which each word appears. Recode positive sentiment values as 1,
+      #and negative sentiment values as 0; this will allow you to compute the average sentiment for each
+      #decile of each plot. Record these average sentiments in a tibble called plots, which has four columns:
+      #story_number, title, decile, and mean_sentiment, a number between 0 and 1. You should ignore
+      #NA values when computing mean_sentiment for each decile of each plot.
+      
+      plot_words$decile<-ceiling(plot_words$word_position*10)
+      
       
