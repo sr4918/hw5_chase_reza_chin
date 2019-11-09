@@ -123,7 +123,9 @@ setwd("C:/Users/samee/Dropbox/NYU-PhD/3. Fall 2019/Messy Data and ML/Assignment 
       #Starting with the plot_words tibble from Question A2.2, add a new column called sentiment, assigning
       #to each word the corresponding sentiment value from the bing lexicon. What proportion of words have
       #sentiment values?
-      plot_words$sentiment<-plot_words%>%inner_join(get_sentiments("bing"))
+      
+      plot_words<-plot_words%>%left_join(get_sentiments("bing"))
+      proportion<-sum(!is.na(plot_words$sentiment))/nrow(plot_words)
       #B1.3. Add a decile column to plot_words, as in Question A3.1, which records the decile (an integer between
       #1 and 10) of the plot position in which each word appears. Recode positive sentiment values as 1,
       #and negative sentiment values as 0; this will allow you to compute the average sentiment for each
@@ -132,5 +134,9 @@ setwd("C:/Users/samee/Dropbox/NYU-PhD/3. Fall 2019/Messy Data and ML/Assignment 
       #NA values when computing mean_sentiment for each decile of each plot.
       
       plot_words$decile<-ceiling(plot_words$word_position*10)
+      plot_words <-plot_words%>%mutate(sentiment2 = case_when(sentiment =="positive"~ 1, sentiment=="negative" ~0))
+      
+      plot_words<-plot_words%>%group_by(story_number,decile)%>%summarize(mean_sentiment = mean(sentiment2,na.rm =T))
+      
       
       
