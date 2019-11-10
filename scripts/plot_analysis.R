@@ -2,6 +2,7 @@ library(tidytext)
 library(tidyverse)
 library(ggplot2)
 library(ggpubr)
+library(dplyr)
 setwd("C:/Users/samee/Dropbox/NYU-PhD/3. Fall 2019/Messy Data and ML/Assignment 5")
 #A2
         #A2.1 Set the seed to 2048 and read in the plots and titles files with readr::read_lines(). Create a
@@ -136,7 +137,33 @@ setwd("C:/Users/samee/Dropbox/NYU-PhD/3. Fall 2019/Messy Data and ML/Assignment 
       plot_words$decile<-ceiling(plot_words$word_position*10)
       plot_words <-plot_words%>%mutate(sentiment2 = case_when(sentiment =="positive"~ 1, sentiment=="negative" ~0))
       
-      plot_words<-plot_words%>%group_by(story_number,decile)%>%summarize(mean_sentiment = mean(sentiment2,na.rm =T))
+      plots<-plot_words%>%group_by(story_number,title,decile)%>%summarize(mean_sentiment = mean(sentiment2,na.rm =T))
+      
+      #QB2.1
+      #For each plot in plots, add a column called ending that records if the 10th decile of the plot has
+      #mean_sentiment greater than or equal to 0.5 (we'll say this was a happy ending, and put the value in
+      #ending as 1), or less than 0.5 (we'll say this was a sad ending, and put the value in ending as 0). Drop
+      #all plots that have a missing value for ending, and that have fewer than 10 deciles. How many plots do
+      #you lose?
       
       
+      plots2<-plots%>% group_by(story_number)%>%filter(decile==10)%>%mutate(ending = ifelse(mean_sentiment>=0.5,1,0))
+      plots<-left_join(plots,plots2)
+      lose<-filter(plots, decile ==10 & is.na(ending))
+      lose_plots<-sum(is.na(lose$ending))
+      # 31626
+      plots<-plots %>%
+        group_by(story_number) %>%
+        filter(!any(decile==10 & is.na(ending)))
+      #B2.2.
+      #A fair number of plot-deciles in the plots tibble still have missing mean_sentiment values (for deciles
+      #1-9). We'll deal with this using imputation. For each missing mean_sentiment value in deciles 1-9,
+      #replace it with the average sentiment from the other deciles in the same plot, ignoring NA values. For
+      #example, if plot P has mean_sentiment 0.5 for deciles 1 and 2, mean_sentiment 0 for deciles 3-7, and a
+      #missing mean_sentiment value for deciles 8 and 9, then you should impute a mean_sentiment value of
+      #1/7 for deciles 8 and 9. After this imputation, drop any plots that still have missing mean_sentiment
+      #values in any decile.1
+      plots<-plots %>% group_by(story_number) %>%
+        mutate(mean_sentiment=ifelse(is.na(mean_sentiment),mean(mean_sentiment,na.rm=TRUE),mean_sentiment))
+      sum(is.na(plots$mean_sentiment))
       
