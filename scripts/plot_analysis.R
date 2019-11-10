@@ -155,6 +155,7 @@ setwd("C:/Users/samee/Dropbox/NYU-PhD/3. Fall 2019/Messy Data and ML/Assignment 
       plots<-plots %>%
         group_by(story_number) %>%
         filter(!any(decile==10 & is.na(ending)))
+     
       #B2.2.
       #A fair number of plot-deciles in the plots tibble still have missing mean_sentiment values (for deciles
       #1-9). We'll deal with this using imputation. For each missing mean_sentiment value in deciles 1-9,
@@ -163,7 +164,8 @@ setwd("C:/Users/samee/Dropbox/NYU-PhD/3. Fall 2019/Messy Data and ML/Assignment 
       #missing mean_sentiment value for deciles 8 and 9, then you should impute a mean_sentiment value of
       #1/7 for deciles 8 and 9. After this imputation, drop any plots that still have missing mean_sentiment
       #values in any decile.1
-      plots<-plots %>% group_by(story_number) %>%
-        mutate(mean_sentiment=ifelse(is.na(mean_sentiment),mean(mean_sentiment,na.rm=TRUE),mean_sentiment))
+      
+      plots<-plots %>% group_by(story_number,title) %>%
+        mutate(mean_sentiment=ifelse(is.na(mean_sentiment),mean(mean_sentiment,na.rm=TRUE),mean_sentiment))%>%ungroup
       sum(is.na(plots$mean_sentiment))
       
