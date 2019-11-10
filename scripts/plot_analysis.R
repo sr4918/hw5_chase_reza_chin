@@ -165,8 +165,31 @@ setwd("C:/Users/samee/Dropbox/NYU-PhD/3. Fall 2019/Messy Data and ML/Assignment 
       #1/7 for deciles 8 and 9. After this imputation, drop any plots that still have missing mean_sentiment
       #values in any decile.1
      
-       #This following seems in correct as i dont have any na values left after it
-      plots<-plots %>% group_by(story_number,title) %>%
-        mutate(mean_sentiment=ifelse(is.na(mean_sentiment),mean(mean_sentiment,na.rm=TRUE),mean_sentiment))%>%ungroup
+      plots<-plots %>%group_by(story_number,title) %>% 
+        mutate(mean_sentiment=ifelse(is.na(mean_sentiment),mean(mean_sentiment[1:(n()-1)],na.rm=TRUE),mean_sentiment))
       sum(is.na(plots$mean_sentiment))
+      
+      plots<-plots %>%
+        group_by(story_number) %>%
+        filter(!any(is.na(mean_sentiment)))
+      
+  #B2.3
+      #3. At this point, plots should have five columns: story_number, title, decile, mean_sentiment, and
+      #ending. We would like to reshape this into a dataset where each row represents exactly one plot, and
+      #we can use the sentiment values from the first nine deciles to predict the ending. Use dplyr::spread
+      #to achieve this, and call the resulting tibble modeling_data. This tibble should have 11 columns:
+      #  story_number, decile_1, decile_2, . . . , decile_9, and ending, where the value in each decile_j
+      #column is the mean sentiment for that decile and that story. Then, randomly split modeling_data into
+      #an 80% train set and a 20% test set. All the words for a given plot should be in either the training or
+      #testing set; no plot should be divided across the two sets.
+      
+     #ASK: ending should be for every row not every plot as said eaarlier
+      plots<-plots%>%group_by(story_number)%>%mutate(ending = ending[n()])
+      modeling_data<-spread(plots, decile, mean_sentiment)
+      #move ending to last columns
+      modeling_data<-modeling_data%>%select(-ending, ending)
+      
+      
+      #train and test sets should have complete plots
+      
       
