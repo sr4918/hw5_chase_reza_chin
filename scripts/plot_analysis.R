@@ -183,7 +183,7 @@ setwd("C:/Users/samee/Dropbox/NYU-PhD/3. Fall 2019/Messy Data and ML/Assignment 
       #an 80% train set and a 20% test set. All the words for a given plot should be in either the training or
       #testing set; no plot should be divided across the two sets.
       
-     #ASK: ending should be for every row not every plot as said eaarlier
+     #ASK: ending should be for every row not every plot as said earlier
       plots<-plots%>%group_by(story_number)%>%mutate(ending = ending[n()])
       modeling_data<-spread(plots, decile, mean_sentiment)
       #move ending to last columns
@@ -191,5 +191,9 @@ setwd("C:/Users/samee/Dropbox/NYU-PhD/3. Fall 2019/Messy Data and ML/Assignment 
       
       
       #train and test sets should have complete plots
+      
+      index <- sample_n(plots,nrow(plots),replace = TRUE,prob=c(0.8,0.2))
+      trainData <- plots[index==1,]
+      testData <-plots[index==2,]
       
       
