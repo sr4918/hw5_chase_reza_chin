@@ -164,7 +164,8 @@ setwd("C:/Users/samee/Dropbox/NYU-PhD/3. Fall 2019/Messy Data and ML/Assignment 
       #missing mean_sentiment value for deciles 8 and 9, then you should impute a mean_sentiment value of
       #1/7 for deciles 8 and 9. After this imputation, drop any plots that still have missing mean_sentiment
       #values in any decile.1
-      
+     
+       #This following seems in correct as i dont have any na values left after it
       plots<-plots %>% group_by(story_number,title) %>%
         mutate(mean_sentiment=ifelse(is.na(mean_sentiment),mean(mean_sentiment,na.rm=TRUE),mean_sentiment))%>%ungroup
       sum(is.na(plots$mean_sentiment))
