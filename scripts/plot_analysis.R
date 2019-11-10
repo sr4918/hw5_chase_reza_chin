@@ -3,6 +3,7 @@ library(tidyverse)
 library(ggplot2)
 library(ggpubr)
 library(dplyr)
+library(ROCR)
 setwd("C:/Users/samee/Dropbox/NYU-PhD/3. Fall 2019/Messy Data and ML/Assignment 5")
 #A2
         #A2.1 Set the seed to 2048 and read in the plots and titles files with readr::read_lines(). Create a
@@ -186,14 +187,61 @@ setwd("C:/Users/samee/Dropbox/NYU-PhD/3. Fall 2019/Messy Data and ML/Assignment 
      #ASK: ending should be for every row not every plot as said earlier
       plots<-plots%>%group_by(story_number)%>%mutate(ending = ending[n()])
       modeling_data<-spread(plots, decile, mean_sentiment)
+      
       #move ending to last columns
       modeling_data<-modeling_data%>%select(-ending, ending)
+      names(modeling_data)<-c("story_number", "title", "decile_1","decile_2","decile_3","decile_4","decile_5","decile_6","decile_7","decile_8","decile_9","decile_10","ending")
+      #drop decile 10
+      modeling_data<-select(modeling_data,-decile_10)
       
       
-      #train and test sets should have complete plots
+      #train and test sets should have complete plots not repeated in the two sets using replace = FALSE
       
-      index <- sample_n(plots,nrow(plots),replace = TRUE,prob=c(0.8,0.2))
-      trainData <- plots[index==1,]
-      testData <-plots[index==2,]
+      index<-sample(1:nrow(modeling_data),.8*nrow(modeling_data), replace = F)
+      train_data <- modeling_data[index,]
+      test_data <- modeling_data[-index,]
+      
+      #Question B3. Fit a logistic regression. 
+      #1. Fit a logistic regression model using the training data you created in the previous step, predicting ending
+      #as a function of the average sentiments of the first nine deciles (make sure not to use story_number as 
+      #a predictor).
       
       
+      #ASK do we have to take AVERAGE of first nine deciles??
+      modelB3.1 <- glm(ending~decile_1+decile_2+decile_3+decile_4+decile_5+decile_6+decile_7+decile_8+decile_9              
+                       , family = binomial, data = train_data)
+      
+      pred_B3.1 <- predict(modelB3.1, test_data, type = "response")
+      ROCR_B3.1 <- prediction(pred_B3.1, test_data$ending)
+      auc_ROCR_B3.1 <- performance(ROCR_B3.1, measure = "auc")
+      auc_B3.1 <- auc_ROCR_B3.1@y.values[[1]]
+     
+      
+      #2. Report the AUC score of your fitted model on your test set in your writeup.
+      auc_B3.1
+      #0.6079
+      
+#B4   
+      #B4.1. Take the plot from the 2018 movie A Star is Born, and hardcode it into your script. Process the data
+      #so that we can obtain predictions for this story (i.e. unnest the tokens, join with the bing sentiment
+      #lexicon, and calculate the average sentiment for each decile). Note: this question requires you to read
+      #the plot of this movie, which contains spoilers!
+Plot_AStar_is_born<-"Jackson Jack Maine, a famous country rock singer privately battling an alcohol and drug addiction, plays a concert. His main support is Bobby, his manager and older half-brother. After a show, Jack, searching for his next drink, visits a drag bar where he witnesses a tribute performance to Edith Piaf, by Ally, a waitress and singer-songwriter. Jack is amazed by her performance, and they spend the night talking to each other, where Ally discloses to him her unsuccessful efforts in pursuing a professional music career. Ally shares with Jack some lyrics she has been working on, and Jack tells Ally she is a talented songwriter and should perform her own material.Jack invites Ally to his next show. Despite her initial refusal she attends and, with Jack's encouragement, sings "Shallow" on stage with him. Jack invites Ally to go on tour with him, and they form a romantic relationship. In Arizona, Ally and Jack visit the ranch where Jack grew up and where his father is buried. That was the time when he discovered that Bobby sold the land and it was converted to a wind farm. Angered at his betrayal, Jack punches Bobby, who subsequently quits as his manager. Before doing so, Bobby reveals that he did inform Jack about the sale, but Jack was too inebriated to notice.While on tour Ally meets Rez, a record producer who offers her a contract. Although visibly bothered, Jack still supports her decision. Rez refocuses Ally away from country music and towards pop. Jack misses one of Ally's performances after he passes out drunk in public; he recovers at the home of his best friend George "Noodles" Stone, and later makes up with Ally. There he proposes to Ally with an impromptu ring made from a loop of guitar string, and they are married that same day at a church ministered by a relative of Noodles.
+      During Ally's performance on Saturday Night Live, Bobby reconciles with Jack. Later, Jack and Ally fight after he drunkenly voices his disapproval of Ally's new image and music, which is nominated for three Grammy Awards. At the Grammys, a visibly intoxicated Jack performs in a tribute to Roy Orbison, and Ally wins the Best New Artist award. When she goes up on stage to receive her award, Jack staggers up to her, where he publicly wets himself and passes out. Ally's father, Lorenzo, berates a semi-conscious Jack, while Ally attempts to help Jack sober up. Jack joins a rehabilitation program shortly thereafter. Jack recovers in rehab for about two months, where he discloses to his counselor that he attempted suicide when he was 13 years old. He also mentions that he has tinnitus, which has been getting worse.Jack tearfully apologizes to Ally for his behavior. While returning home, he admits to Bobby that it was him he idolized and not their father. Ally asks to bring Jack to perform with her European tour; Rez refuses, prompting Ally to cancel the remainder of the tour so she can care for Jack. Later, while Ally is out of the room, Rez confronts Jack, accusing him of being washed-up and of holding Ally back. That evening, Ally lies to Jack, and tells him that her record label has cancelled her tour so she can focus on her second album. Jack promises that he will come to her concert that night, but after Ally leaves, he hangs himself in their garage. Ally, grief-stricken and inconsolable after Jack's suicide, is visited by Bobby, who explains that the suicide was Jack's own decision and it was not her fault. The closing scenes reveal a flashback of Jack working on a song about his love for Ally which he had not finished. Ally sings this song as a tribute to Jack, introducing herself for the first time as Ally Maine. The film ends with a close-up of Ally looking up to the heavens, before the screen cuts to black."
+     
+ # 2. Using the classifier from Question B3, predict whether this story has a happy ending or a sad ending
+      #using the mean sentiment of the first nine deciles. Report the predicted probability of a happy ending.
+      #Upon reading the end of the plot, do you agree with the classifier?
+      
+       # 3. Rewrite the last decile of the plot to be "happy" (i.e., to have a mean sentiment greater than 0.5). Your
+      #rewritten ending should be coherent English!
+       # 1Note that mean imputation has a number of significant drawbacks; don't blindly use it whenever you are dealing with
+      #missing data!
+      
+       # 4
+      #4. Does the rewritten ending need to be coherent English in order to be "happy" according to our definition?
+       # That is, do the written sentences have to actually make sense?
+      
+      
+        #5. If you had unlimited time, can you think of ways to more accurately capture whether the ending to a
+      #story is happy or sad? Write a few sentences in your writeup.
