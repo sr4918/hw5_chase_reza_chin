@@ -241,6 +241,7 @@ setwd("C:/Users/samee/Dropbox/NYU-PhD/3. Fall 2019/Messy Data and ML/Assignment 
      
       new_word_decile_counts<-plot_new_words %>% 
         mutate(decile = ceiling(word_position*10))
+      new_word_decile_counts<-new_word_decile_counts%>%group_by()
  # 2. Using the classifier from Question B3, predict whether this story has a happy ending or a sad ending
       #using the mean sentiment of the first nine deciles. Report the predicted probability of a happy ending.
       #Upon reading the end of the plot, do you agree with the classifier?
